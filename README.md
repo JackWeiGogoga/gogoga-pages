@@ -52,6 +52,17 @@ GOGOGA_SITE_DOMAIN="pages.gogoga.top"
 GOGOGA_MAX_UPLOAD_MB="100"
 BETTER_AUTH_SECRET="replace-with-a-random-32-byte-secret"
 BETTER_AUTH_URL="https://app.pages.gogoga.top"
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET=""
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+```
+
+启用第三方登录时，在 OAuth 应用中配置回调地址：
+
+```text
+https://app.pages.gogoga.top/api/auth/callback/github
+https://app.pages.gogoga.top/api/auth/callback/google
 ```
 
 生产部署目录：

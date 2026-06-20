@@ -169,6 +169,10 @@ services:
       GOGOGA_MAX_UPLOAD_MB: "100"
       BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET}"
       BETTER_AUTH_URL: "https://app.pages.gogoga.top"
+      GITHUB_CLIENT_ID: "${GITHUB_CLIENT_ID:-}"
+      GITHUB_CLIENT_SECRET: "${GITHUB_CLIENT_SECRET:-}"
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:-}"
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET:-}"
     ports:
       - "127.0.0.1:3000:3000"
     volumes:
@@ -195,6 +199,13 @@ Initialize SQLite on first deploy:
 ```bash
 docker compose exec app npm run db:init:prod
 docker compose exec app npx prisma db push
+```
+
+OAuth redirect URLs:
+
+```text
+https://app.pages.gogoga.top/api/auth/callback/github
+https://app.pages.gogoga.top/api/auth/callback/google
 ```
 
 Verify:

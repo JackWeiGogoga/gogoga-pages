@@ -164,6 +164,12 @@ services:
       GOGOGA_DATA_DIR: "/data/gogoga"
       GOGOGA_SITE_DOMAIN: "pages.gogoga.top"
       GOGOGA_MAX_UPLOAD_MB: "100"
+      BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET}"
+      BETTER_AUTH_URL: "https://app.pages.gogoga.top"
+      GITHUB_CLIENT_ID: "${GITHUB_CLIENT_ID:-}"
+      GITHUB_CLIENT_SECRET: "${GITHUB_CLIENT_SECRET:-}"
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:-}"
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET:-}"
     ports:
       - "127.0.0.1:3000:3000"
     volumes:
@@ -247,4 +253,3 @@ Clean unused Docker images:
 docker image prune
 docker image prune -a
 ```
-
