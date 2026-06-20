@@ -25,6 +25,30 @@ import { CreateProjectForm } from "./project-form";
 
 export const dynamic = "force-dynamic";
 
+const deploymentStatuses = [
+  "ready",
+  "failed",
+  "uploading",
+  "extracting",
+  "publishing",
+  "empty",
+] as const;
+
+type DeploymentStatus = (typeof deploymentStatuses)[number];
+type LatestDeployment = {
+  status: string;
+  createdAt: Date;
+  fileCount: number;
+  totalBytes: number;
+};
+type DashboardProject = {
+  id: string;
+  name: string;
+  slug: string;
+  siteKey: string;
+  deployments: LatestDeployment[];
+};
+
 export default async function DashboardPage() {
   const user = await requireUser();
   const requestHost = (await headers()).get("host");
@@ -47,11 +71,12 @@ export default async function DashboardPage() {
       },
     }),
   ]);
-  const readyCount = projects.filter(
-    (project) => project.deployments[0]?.status === "ready",
+  const dashboardProjects: DashboardProject[] = projects;
+  const readyCount = dashboardProjects.filter(
+    (project) => getLatestDeployment(project)?.status === "ready",
   ).length;
-  const pendingCount = projects.filter((project) => {
-    const latest = project.deployments[0];
+  const pendingCount = dashboardProjects.filter((project) => {
+    const latest = getLatestDeployment(project);
     return latest && latest.status !== "ready";
   }).length;
 
@@ -61,7 +86,7 @@ export default async function DashboardPage() {
         <StatCard
           description="全部项目数量"
           eyebrow="项目总数"
-          value={projects.length.toString()}
+          value={dashboardProjects.length.toString()}
         />
         <StatCard
           description="累计上传发布次数"
@@ -91,7 +116,7 @@ export default async function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            {projects.length === 0 ? (
+            {dashboardProjects.length === 0 ? (
               <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 text-center">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-muted/40">
                   <Folder className="h-5 w-5 text-muted-foreground" />
@@ -116,8 +141,8 @@ export default async function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {projects.map((project) => {
-                    const latest = project.deployments[0];
+                  {dashboardProjects.map((project) => {
+                    const latest = getLatestDeployment(project);
                     const domain = getProjectDomain(project.siteKey);
                     const projectUrl = getProjectUrl(project.siteKey, requestHost);
 
@@ -225,14 +250,16 @@ function StatCard({
 }
 
 function StatusBadge({ status }: { status: string }) {
+  const knownStatus = isDeploymentStatus(status) ? status : null;
+
   return (
     <Badge
       className={
-        status === "ready"
+        knownStatus === "ready"
           ? "border-green-200 bg-green-50 text-green-700"
-          : status === "failed"
+          : knownStatus === "failed"
             ? "border-red-200 bg-red-50 text-red-700"
-            : status === "empty"
+            : knownStatus === "empty"
               ? "text-muted-foreground"
               : "border-blue-200 bg-blue-50 text-blue-700"
       }
@@ -242,7 +269,19 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+function getLatestDeployment(project: DashboardProject) {
+  return project.deployments.at(0);
+}
+
+function isDeploymentStatus(status: string): status is DeploymentStatus {
+  return deploymentStatuses.some((deploymentStatus) => deploymentStatus === status);
+}
+
 function formatStatus(status: string) {
+  if (!isDeploymentStatus(status)) {
+    return status;
+  }
+
   switch (status) {
     case "ready":
       return "已上线";
@@ -263,10 +302,11 @@ function formatStatus(status: string) {
 
 function formatBytes(bytes: number) {
   if (!bytes) return "0 B";
-  const units = ["B", "KB", "MB", "GB"];
+  const units = ["B", "KB", "MB", "GB"] as const;
   const index = Math.min(
     Math.floor(Math.log(bytes) / Math.log(1024)),
     units.length - 1,
   );
-  return `${(bytes / 1024 ** index).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
+  const unit = units[index] ?? "B";
+  return `${(bytes / 1024 ** index).toFixed(index === 0 ? 0 : 1)} ${unit}`;
 }
