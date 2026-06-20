@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getRequestUser } from "@/lib/auth-session";
 import { prisma } from "@/lib/prisma";
+import { createSiteKey } from "@/lib/site-key";
 import { normalizeSlug, slugFromProjectName, validateSlug } from "@/lib/slug";
 
 const createProjectSchema = z.object({
@@ -36,18 +37,32 @@ export async function POST(request: Request) {
   }
 
   try {
+    const existingProject = await prisma.project.findFirst({
+      where: {
+        userId: user.id,
+        slug: slugResult.slug
+      },
+      select: { id: true }
+    });
+
+    if (existingProject) {
+      return NextResponse.json({ error: "你已经有同名访问路径的项目" }, { status: 409 });
+    }
+
+    const siteKey = await createSiteKey(user.id, slugResult.slug);
     const project = await prisma.project.create({
       data: {
         userId: user.id,
         name: parsed.data.name,
-        slug: slugResult.slug
+        slug: slugResult.slug,
+        siteKey
       }
     });
 
     return NextResponse.json(project, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.message.includes("Unique constraint")) {
-      return NextResponse.json({ error: "该访问路径已被占用" }, { status: 409 });
+      return NextResponse.json({ error: "访问路径冲突，请换一个名称重试" }, { status: 409 });
     }
 
     return NextResponse.json({ error: "创建项目失败" }, { status: 500 });

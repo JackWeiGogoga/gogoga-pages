@@ -42,8 +42,8 @@ export default async function ProjectPage({
     notFound();
   }
 
-  const domain = getProjectDomain(project.slug);
-  const projectUrl = getProjectUrl(project.slug, requestHost);
+  const domain = getProjectDomain(project.siteKey);
+  const projectUrl = getProjectUrl(project.siteKey, requestHost);
   const activeDeployment = project.deployments
     .filter((deployment) => deployment.activatedAt)
     .sort((a, b) => b.activatedAt!.getTime() - a.activatedAt!.getTime())[0];

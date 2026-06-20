@@ -72,12 +72,10 @@ const DashboardHeaderContext = createContext<
 
 export function DashboardShell({
   children,
-  siteDomain,
   userEmail,
   userName,
 }: {
   children: React.ReactNode;
-  siteDomain: string;
   userEmail: string;
   userName: string;
 }) {
@@ -94,7 +92,6 @@ export function DashboardShell({
           <aside className="hidden h-screen w-64 shrink-0 overflow-y-auto bg-sidebar px-3 py-4 md:block">
             <SidebarContent
               pathname={pathname}
-              siteDomain={siteDomain}
               userEmail={userEmail}
               userName={userName}
             />
@@ -122,7 +119,6 @@ export function DashboardShell({
                 </div>
                 <SidebarContent
                   pathname={pathname}
-                  siteDomain={siteDomain}
                   userEmail={userEmail}
                   userName={userName}
                 />
@@ -241,12 +237,10 @@ function Breadcrumbs({
 
 function SidebarContent({
   pathname,
-  siteDomain,
   userEmail,
   userName,
 }: {
   pathname: string;
-  siteDomain: string;
   userEmail: string;
   userName: string;
 }) {

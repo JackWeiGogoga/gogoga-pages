@@ -210,7 +210,7 @@ async function deployFiles(
     await assertIndexExists(targetDir);
     const result = await countPublishedFiles(targetDir);
     await writeDeploymentManifest(targetDir, manifest);
-    await activateDeployment(project.slug, targetDir);
+    await activateDeployment(project.siteKey, targetDir);
 
     return prisma.deployment.update({
       where: { id: deployment.id },
@@ -553,7 +553,7 @@ export async function rollbackDeployment(projectId: string, deploymentId: string
   });
 
   await assertIndexExists(deployment.storagePath);
-  await activateDeployment(deployment.project.slug, deployment.storagePath);
+  await activateDeployment(deployment.project.siteKey, deployment.storagePath);
 
   return prisma.deployment.update({
     where: { id: deployment.id },
@@ -561,8 +561,8 @@ export async function rollbackDeployment(projectId: string, deploymentId: string
   });
 }
 
-async function activateDeployment(slug: string, targetDir: string) {
-  const siteDir = path.join(sitesDir, slug);
+async function activateDeployment(siteKey: string, targetDir: string) {
+  const siteDir = path.join(sitesDir, siteKey);
   const currentLink = path.join(siteDir, "current");
   const nextLink = path.join(siteDir, ".current-next");
 

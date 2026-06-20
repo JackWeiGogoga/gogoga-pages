@@ -118,8 +118,8 @@ export default async function DashboardPage() {
                 <TableBody>
                   {projects.map((project) => {
                     const latest = project.deployments[0];
-                    const domain = getProjectDomain(project.slug);
-                    const projectUrl = getProjectUrl(project.slug, requestHost);
+                    const domain = getProjectDomain(project.siteKey);
+                    const projectUrl = getProjectUrl(project.siteKey, requestHost);
 
                     return (
                       <TableRow key={project.id}>

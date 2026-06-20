@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS "Project" (
   "userId" TEXT,
   "name" TEXT NOT NULL,
   "slug" TEXT NOT NULL,
+  "siteKey" TEXT NOT NULL,
   "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "Project_userId_fkey"
@@ -12,8 +13,8 @@ CREATE TABLE IF NOT EXISTS "Project" (
     ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS "Project_slug_key" ON "Project"("slug");
-CREATE INDEX IF NOT EXISTS "Project_userId_idx" ON "Project"("userId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Project_siteKey_key" ON "Project"("siteKey");
+CREATE UNIQUE INDEX IF NOT EXISTS "Project_userId_slug_key" ON "Project"("userId", "slug");
 
 CREATE TABLE IF NOT EXISTS "user" (
   "id" TEXT NOT NULL PRIMARY KEY,

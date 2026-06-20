@@ -10,9 +10,9 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ slug: string; path?: string[] }> }
 ) {
-  const { slug, path: pathSegments = [] } = await params;
+  const { slug: siteKey, path: pathSegments = [] } = await params;
 
-  if (!/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(slug)) {
+  if (!/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(siteKey)) {
     return new NextResponse("Not found", { status: 404 });
   }
 
@@ -20,7 +20,7 @@ export async function GET(
     return new NextResponse("Not found", { status: 404 });
   }
 
-  const rootDir = path.join(sitesDir, slug, "current");
+  const rootDir = path.join(sitesDir, siteKey, "current");
   const requestedPath = path.join(rootDir, ...pathSegments);
   const filePath = await resolveStaticFile(rootDir, requestedPath);
 
