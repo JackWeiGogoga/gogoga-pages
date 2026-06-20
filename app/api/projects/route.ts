@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     return NextResponse.json(project, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.message.includes("Unique constraint")) {
-      return NextResponse.json({ error: "该 Slug 已被占用" }, { status: 409 });
+      return NextResponse.json({ error: "该访问路径已被占用" }, { status: 409 });
     }
 
     return NextResponse.json({ error: "创建项目失败" }, { status: 500 });

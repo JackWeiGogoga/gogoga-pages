@@ -35,19 +35,19 @@ export function validateSlug(value: string) {
   const slug = normalizeSlug(value);
 
   if (!slug) {
-    return { ok: false as const, error: "Slug 不能为空" };
+    return { ok: false as const, error: "访问路径不能为空" };
   }
 
   if (slug.length < 3 || slug.length > 40) {
-    return { ok: false as const, error: "Slug 长度需要在 3 到 40 个字符之间" };
+    return { ok: false as const, error: "访问路径长度需要在 3 到 40 个字符之间" };
   }
 
   if (!/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(slug)) {
-    return { ok: false as const, error: "Slug 只能包含小写字母、数字和中划线" };
+    return { ok: false as const, error: "访问路径只能包含小写字母、数字和中划线" };
   }
 
   if (reservedSlugs.has(slug)) {
-    return { ok: false as const, error: "该 Slug 是平台保留名称" };
+    return { ok: false as const, error: "该访问路径是平台保留名称" };
   }
 
   return { ok: true as const, slug };

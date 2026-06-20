@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { headers } from "next/headers";
-import type { ComponentType } from "react";
-import { ArrowUpRight, ExternalLink, Folder, Globe2, Rocket, UploadCloud } from "lucide-react";
+import { ArrowUpRight, ExternalLink, Folder, Rocket } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +8,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from "@/components/ui/card";
 import {
   Table,
@@ -17,7 +16,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
 } from "@/components/ui/table";
 import { prisma } from "@/lib/prisma";
 import { siteDomain } from "@/lib/config";
@@ -34,43 +33,41 @@ export default async function DashboardPage() {
       include: {
         deployments: {
           orderBy: { createdAt: "desc" },
-          take: 1
-        }
-      }
+          take: 1,
+        },
+      },
     }),
-    prisma.deployment.count()
+    prisma.deployment.count(),
   ]);
-  const readyCount = projects.filter((project) => project.deployments[0]?.status === "ready").length;
+  const readyCount = projects.filter(
+    (project) => project.deployments[0]?.status === "ready",
+  ).length;
   const pendingCount = projects.filter((project) => {
     const latest = project.deployments[0];
     return latest && latest.status !== "ready";
   }).length;
 
   return (
-    <div className="@container/main flex flex-1 flex-col gap-4 py-4 md:gap-6 md:py-6">
-      <section className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-4 lg:px-6">
+    <div className="@container/main flex flex-1 flex-col gap-4 py-4 md:py-5">
+      <section className="grid grid-cols-2 gap-3 px-4 lg:grid-cols-4 lg:px-6">
         <StatCard
-          description="Ready projects"
-          eyebrow="Total Projects"
-          trend="+12.5%"
+          description="全部项目数量"
+          eyebrow="项目总数"
           value={projects.length.toString()}
         />
         <StatCard
-          description="All-time uploads"
-          eyebrow="Deployments"
-          trend="+8.2%"
+          description="累计上传发布次数"
+          eyebrow="部署次数"
           value={deploymentCount.toString()}
         />
         <StatCard
-          description={`${readyCount} projects online`}
-          eyebrow="Active Sites"
-          trend="+4.5%"
+          description={`${readyCount} 个项目在线`}
+          eyebrow="在线站点"
           value={readyCount.toString()}
         />
         <StatCard
-          description="Need attention"
-          eyebrow="Pending"
-          trend={pendingCount ? `${pendingCount}` : "0"}
+          description="需要关注的部署"
+          eyebrow="处理中"
           value={pendingCount.toString()}
         />
       </section>
@@ -79,19 +76,9 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-col gap-3 border-b py-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="text-base">Projects</CardTitle>
-              <CardDescription>
-                上传 zip 或 html 文件，发布到 {"{slug}."}
-                {siteDomain}。
-              </CardDescription>
+              <CardTitle className="text-base">项目</CardTitle>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button asChild size="sm" variant="outline">
-                <a href={`https://app.${siteDomain}`} target="_blank" rel="noreferrer">
-                  app.{siteDomain}
-                  <ArrowUpRight className="ml-2 h-3.5 w-3.5" />
-                </a>
-              </Button>
               <CreateProjectForm />
             </div>
           </CardHeader>
@@ -113,11 +100,11 @@ export default async function DashboardPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30 hover:bg-muted/30">
-                    <TableHead className="w-[260px]">Project</TableHead>
-                    <TableHead>Domain</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Latest Deployment</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="w-[260px]">项目</TableHead>
+                    <TableHead>域名</TableHead>
+                    <TableHead>状态</TableHead>
+                    <TableHead>最近部署</TableHead>
+                    <TableHead className="text-right">操作</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -140,7 +127,9 @@ export default async function DashboardPage() {
                               >
                                 {project.name}
                               </Link>
-                              <div className="text-xs text-muted-foreground">{project.slug}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {project.slug}
+                              </div>
                             </div>
                           </div>
                         </TableCell>
@@ -148,14 +137,21 @@ export default async function DashboardPage() {
                           {domain}
                         </TableCell>
                         <TableCell>
-                          {latest ? <StatusBadge status={latest.status} /> : <StatusBadge status="empty" />}
+                          {latest ? (
+                            <StatusBadge status={latest.status} />
+                          ) : (
+                            <StatusBadge status="empty" />
+                          )}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
                           {latest ? (
                             <div className="flex flex-col gap-1">
-                              <span>{latest.createdAt.toLocaleString("zh-CN")}</span>
+                              <span>
+                                {latest.createdAt.toLocaleString("zh-CN")}
+                              </span>
                               <span className="text-xs">
-                                {latest.fileCount} files / {formatBytes(latest.totalBytes)}
+                                {latest.fileCount} 个文件 /{" "}
+                                {formatBytes(latest.totalBytes)}
                               </span>
                             </div>
                           ) : (
@@ -165,13 +161,19 @@ export default async function DashboardPage() {
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button asChild variant="outline" size="sm">
-                              <a href={projectUrl} target="_blank" rel="noreferrer">
+                              <a
+                                href={projectUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
                                 访问
                                 <ExternalLink className="ml-2 h-3.5 w-3.5" />
                               </a>
                             </Button>
                             <Button asChild size="sm">
-                              <Link href={`/dashboard/projects/${project.id}`}>管理</Link>
+                              <Link href={`/dashboard/projects/${project.id}`}>
+                                管理
+                              </Link>
                             </Button>
                           </div>
                         </TableCell>
@@ -183,39 +185,6 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle className="text-base">Deployment Activity</CardTitle>
-              <CardDescription>最近项目部署状态概览。</CardDescription>
-            </div>
-            <div className="flex rounded-lg border">
-              <Button className="rounded-r-none" size="sm" variant="ghost">
-                Last 3 months
-              </Button>
-              <Button className="rounded-none border-x" size="sm" variant="ghost">
-                Last 30 days
-              </Button>
-              <Button className="rounded-l-none" size="sm" variant="ghost">
-                Last 7 days
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 md:grid-cols-3">
-              <ActivityTile
-                icon={UploadCloud}
-                label="Uploaded files"
-                value={projects
-                  .reduce((total, project) => total + (project.deployments[0]?.fileCount ?? 0), 0)
-                  .toString()}
-              />
-              <ActivityTile icon={Globe2} label="Online domains" value={readyCount.toString()} />
-              <ActivityTile icon={Folder} label="Workspace projects" value={projects.length.toString()} />
-            </div>
-          </CardContent>
-        </Card>
       </section>
     </div>
   );
@@ -224,56 +193,26 @@ export default async function DashboardPage() {
 function StatCard({
   description,
   eyebrow,
-  trend,
-  value
+  value,
 }: {
   description: string;
   eyebrow: string;
-  trend: string;
   value: string;
 }) {
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="gap-2 p-5">
-        <div className="flex items-center justify-between">
-          <CardDescription>{eyebrow}</CardDescription>
-          <Badge className="gap-1 rounded-full bg-background text-foreground">
-            <ArrowUpRight className="h-3 w-3" />
-            {trend}
-          </Badge>
-        </div>
-        <CardTitle className="text-3xl font-semibold tracking-tight">{value}</CardTitle>
-        <div className="pt-4">
-          <div className="flex items-center gap-1 font-medium">
-            Steady performance
-            <ArrowUpRight className="h-4 w-4" />
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+    <Card>
+      <CardHeader className="gap-1 p-3">
+        <CardDescription className="text-xs">{eyebrow}</CardDescription>
+        <div className="flex items-end justify-between gap-3">
+          <CardTitle className="text-2xl font-semibold tracking-tight">
+            {value}
+          </CardTitle>
+          <p className="truncate text-xs text-muted-foreground">
+            {description}
+          </p>
         </div>
       </CardHeader>
     </Card>
-  );
-}
-
-function ActivityTile({
-  icon: Icon,
-  label,
-  value
-}: {
-  icon: ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center gap-3 rounded-lg border bg-muted/20 p-4">
-      <div className="flex h-9 w-9 items-center justify-center rounded-md bg-background">
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </div>
-      <div>
-        <div className="text-2xl font-semibold tracking-tight">{value}</div>
-        <div className="text-sm text-muted-foreground">{label}</div>
-      </div>
-    </div>
   );
 }
 
@@ -287,17 +226,39 @@ function StatusBadge({ status }: { status: string }) {
             ? "border-red-200 bg-red-50 text-red-700"
             : status === "empty"
               ? "text-muted-foreground"
-            : "border-blue-200 bg-blue-50 text-blue-700"
+              : "border-blue-200 bg-blue-50 text-blue-700"
       }
     >
-      {status === "empty" ? "no deployments" : status}
+      {formatStatus(status)}
     </Badge>
   );
+}
+
+function formatStatus(status: string) {
+  switch (status) {
+    case "ready":
+      return "已上线";
+    case "failed":
+      return "失败";
+    case "uploading":
+      return "上传中";
+    case "extracting":
+      return "解压中";
+    case "publishing":
+      return "发布中";
+    case "empty":
+      return "未部署";
+    default:
+      return status;
+  }
 }
 
 function formatBytes(bytes: number) {
   if (!bytes) return "0 B";
   const units = ["B", "KB", "MB", "GB"];
-  const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  const index = Math.min(
+    Math.floor(Math.log(bytes) / Math.log(1024)),
+    units.length - 1,
+  );
   return `${(bytes / 1024 ** index).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
 }

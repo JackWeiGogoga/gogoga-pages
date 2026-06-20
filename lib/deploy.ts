@@ -503,7 +503,8 @@ async function isGeneratedIndex(indexPath: string) {
   const html = await fs.readFile(indexPath, "utf8").catch(() => "");
   return (
     html.includes('data-gogoga-generated-index="true"') ||
-    (html.includes("<title>Pages</title>") && html.includes("<h1>Pages</h1>"))
+    (html.includes("<title>Pages</title>") && html.includes("<h1>Pages</h1>")) ||
+    (html.includes("<title>页面</title>") && html.includes("<h1>页面</h1>"))
   );
 }
 
@@ -736,7 +737,7 @@ function renderGeneratedIndex(pages: Array<{ title: string; href: string }>) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pages</title>
+  <title>页面</title>
   <style>
     :root {
       color-scheme: light;
@@ -964,7 +965,7 @@ function renderGeneratedIndex(pages: Array<{ title: string; href: string }>) {
   <main class="shell">
     <header class="hero">
       <div>
-        <h1>Pages</h1>
+        <h1>页面</h1>
         <p class="summary">选择一个 HTML 页面打开预览。</p>
       </div>
     </header>
@@ -1073,7 +1074,7 @@ function htmlPathToHref(relativePath: string) {
 
 function htmlPathToTitle(relativePath: string) {
   if (relativePath === "index.html") {
-    return "Home";
+    return "首页";
   }
 
   const directoryName = path.dirname(relativePath);

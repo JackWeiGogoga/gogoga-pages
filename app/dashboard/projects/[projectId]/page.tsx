@@ -53,7 +53,7 @@ export default async function ProjectPage({
         action={{ href: projectUrl, label: "访问站点" }}
         tags={[
           activeDeployment
-            ? { label: "online", className: "border-green-200 bg-green-50 text-green-700" }
+            ? { label: "已上线", className: "border-green-200 bg-green-50 text-green-700" }
             : { label: "未部署" },
           { label: domain },
           { label: `${project.deployments.length} 次部署` },
@@ -76,7 +76,7 @@ export default async function ProjectPage({
           </div>
           {activeId ? (
             <span className="truncate text-xs text-muted-foreground sm:max-w-72">
-              active: {activeId}
+              当前版本：{activeId}
             </span>
           ) : null}
         </CardHeader>
@@ -110,7 +110,7 @@ export default async function ProjectPage({
                                 : "border-blue-200 bg-blue-50 text-blue-700"
                           }
                         >
-                          {deployment.status}
+                          {formatStatus(deployment.status)}
                         </Badge>
                       </td>
                       <td className="max-w-sm px-3 py-2 font-mono text-xs">
@@ -118,7 +118,7 @@ export default async function ProjectPage({
                           <span className="truncate">{deployment.id}</span>
                           {deployment.id === activeId ? (
                             <span className="rounded bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
-                              active
+                              当前
                             </span>
                           ) : null}
                         </div>
@@ -156,4 +156,21 @@ function formatBytes(bytes: number) {
   const units = ["B", "KB", "MB", "GB"];
   const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
   return `${(bytes / 1024 ** index).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
+}
+
+function formatStatus(status: string) {
+  switch (status) {
+    case "ready":
+      return "已上线";
+    case "failed":
+      return "失败";
+    case "uploading":
+      return "上传中";
+    case "extracting":
+      return "解压中";
+    case "publishing":
+      return "发布中";
+    default:
+      return status;
+  }
 }

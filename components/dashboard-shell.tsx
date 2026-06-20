@@ -21,12 +21,12 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   {
-    title: "Dashboard",
+    title: "概览",
     href: "/dashboard",
     icon: LayoutDashboard
   },
   {
-    title: "Projects",
+    title: "项目",
     href: "/dashboard",
     icon: Folder
   }
@@ -34,19 +34,19 @@ const navItems = [
 
 const secondaryItems = [
   {
-    title: "Domains",
+    title: "域名",
     icon: Globe2
   },
   {
-    title: "Deployments",
+    title: "部署",
     icon: Activity
   },
   {
-    title: "Storage",
+    title: "存储",
     icon: Database
   },
   {
-    title: "Settings",
+    title: "设置",
     icon: Settings
   }
 ];
@@ -168,13 +168,13 @@ function Breadcrumbs({ details, pathname }: { details: HeaderDetails | null; pat
     <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-sm">
       <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5">
         <Link className="shrink-0 text-muted-foreground transition-colors hover:text-foreground" href="/dashboard">
-          Projects
+          项目
         </Link>
         {onProjectPage ? (
           <>
             <span className="shrink-0 text-muted-foreground/60">/</span>
             <span className="truncate font-medium text-foreground">
-              {details?.title ?? "Project"}
+              {details?.title ?? "项目详情"}
             </span>
           </>
         ) : null}
@@ -206,8 +206,8 @@ function SidebarContent({
           <Rocket className="h-4 w-4" />
         </div>
         <div className="min-w-0">
-          <div className="truncate text-sm font-semibold">Gogoga Inc.</div>
-          <div className="truncate text-xs text-sidebar-foreground/60">pages platform</div>
+          <div className="truncate text-sm font-semibold">Gogoga</div>
+          <div className="truncate text-xs text-sidebar-foreground/60">页面发布平台</div>
         </div>
       </Link>
 
@@ -215,7 +215,7 @@ function SidebarContent({
         {navItems.map((item) => {
           const Icon = item.icon;
           const active =
-            item.title === "Dashboard"
+            item.href === "/dashboard" && item.title === "概览"
               ? pathname === "/dashboard"
               : pathname.startsWith("/dashboard/projects");
 
@@ -236,7 +236,7 @@ function SidebarContent({
       </nav>
 
       <div className="mt-8">
-        <div className="px-2 text-xs font-medium text-sidebar-foreground/50">Platform</div>
+        <div className="px-2 text-xs font-medium text-sidebar-foreground/50">平台</div>
         <nav className="mt-2 grid gap-1">
           {secondaryItems.map((item) => {
             const Icon = item.icon;
@@ -255,7 +255,7 @@ function SidebarContent({
       </div>
 
       <div className="mt-auto rounded-lg border border-sidebar-border bg-background/70 p-3">
-        <div className="text-xs font-medium text-sidebar-foreground">Default domain</div>
+        <div className="text-xs font-medium text-sidebar-foreground">默认域名</div>
         <div className="mt-1 break-all text-xs text-sidebar-foreground/60">*.{siteDomain}</div>
       </div>
     </div>
