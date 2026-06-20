@@ -1,0 +1,31 @@
+# Append these blocks to /etc/caddy/Caddyfile after DNS and wildcard TLS are configured:
+#   A pages.gogoga.top       -> <server public IP>
+#   A *.pages.gogoga.top     -> <server public IP>
+#
+# Certificate should include both:
+#   pages.gogoga.top
+#   *.pages.gogoga.top
+
+pages.gogoga.top {
+	tls /etc/ssl/gogoga-pages/fullchain.pem /etc/ssl/gogoga-pages/key.pem
+	redir https://app.pages.gogoga.top{uri}
+}
+
+app.pages.gogoga.top {
+	tls /etc/ssl/gogoga-pages/fullchain.pem /etc/ssl/gogoga-pages/key.pem
+	encode gzip
+	request_body {
+		max_size 110MB
+	}
+	reverse_proxy 127.0.0.1:3000
+}
+
+*.pages.gogoga.top {
+	tls /etc/ssl/gogoga-pages/fullchain.pem /etc/ssl/gogoga-pages/key.pem
+	encode gzip
+	reverse_proxy 127.0.0.1:3000
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+}

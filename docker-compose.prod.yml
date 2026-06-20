@@ -1,0 +1,16 @@
+services:
+  app:
+    build:
+      context: .
+    container_name: gogoga-pages-app
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "file:/data/db/app.db"
+      GOGOGA_DATA_DIR: "/data/gogoga"
+      GOGOGA_SITE_DOMAIN: "pages.gogoga.top"
+      GOGOGA_MAX_UPLOAD_MB: "100"
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - /opt/gogoga-pages/data:/data/db
+      - /data/gogoga:/data/gogoga

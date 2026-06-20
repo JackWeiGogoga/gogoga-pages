@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  deployments Deployment[]
+}
+
+model Deployment {
+  id          String    @id @default(cuid())
+  projectId   String
+  status      String
+  storagePath String
+  fileCount   Int       @default(0)
+  totalBytes  Int       @default(0)
+  error       String?
+  createdAt   DateTime  @default(now())
+  activatedAt DateTime?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+}
