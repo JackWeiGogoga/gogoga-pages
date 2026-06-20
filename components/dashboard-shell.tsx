@@ -114,8 +114,8 @@ export function DashboardShell({
         ) : null}
 
         <main className="flex min-h-0 min-w-0 flex-1 flex-col bg-background md:m-2 md:rounded-xl md:shadow-sm">
-          <header className="sticky top-0 z-20 flex min-h-12 shrink-0 items-center justify-between gap-3 border-b bg-background/95 px-4 py-2 backdrop-blur md:rounded-t-xl lg:px-6">
-            <div className="flex min-w-0 items-center gap-3">
+          <header className="sticky top-0 z-20 flex h-12 shrink-0 items-center justify-between gap-3 border-b bg-background/95 px-4 backdrop-blur md:rounded-t-xl lg:px-6">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
               <Button
                 aria-label="打开导航"
                 className="md:hidden"
@@ -165,7 +165,7 @@ function Breadcrumbs({ details, pathname }: { details: HeaderDetails | null; pat
   const onProjectPage = pathname.startsWith("/dashboard/projects");
 
   return (
-    <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-sm">
+    <div className="flex min-w-0 items-center gap-1.5 text-sm">
       <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5">
         <Link className="shrink-0 text-muted-foreground transition-colors hover:text-foreground" href="/dashboard">
           项目
@@ -180,9 +180,12 @@ function Breadcrumbs({ details, pathname }: { details: HeaderDetails | null; pat
         ) : null}
       </nav>
       {details?.tags?.length ? (
-        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+        <div className="hidden min-w-0 items-center gap-1.5 overflow-hidden md:flex">
           {details.tags.map((tag) => (
-            <Badge className={cn("bg-background text-muted-foreground", tag.className)} key={tag.label}>
+            <Badge
+              className={cn("shrink-0 bg-background text-muted-foreground", tag.className)}
+              key={tag.label}
+            >
               {tag.label}
             </Badge>
           ))}

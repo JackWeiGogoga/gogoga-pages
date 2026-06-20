@@ -48,7 +48,7 @@ export default async function ProjectPage({
     : [];
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 lg:px-6">
+    <div className="flex w-full flex-col gap-4 px-4 py-4 md:py-5 lg:px-6">
       <DashboardHeaderDetails
         action={{ href: projectUrl, label: "访问站点" }}
         tags={[

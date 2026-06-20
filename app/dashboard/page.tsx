@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { headers } from "next/headers";
-import { ArrowUpRight, ExternalLink, Folder, Rocket } from "lucide-react";
+import { ExternalLink, Folder, Rocket } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +19,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { prisma } from "@/lib/prisma";
-import { siteDomain } from "@/lib/config";
 import { getProjectDomain, getProjectUrl } from "@/lib/urls";
 import { CreateProjectForm } from "./project-form";
 
