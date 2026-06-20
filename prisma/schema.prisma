@@ -48,8 +48,23 @@ model User {
   projects      Project[]
   sessions      Session[]
   accounts      Account[]
+  apiTokens     ApiToken[]
 
   @@map("user")
+}
+
+model ApiToken {
+  id          String    @id @default(cuid())
+  userId      String
+  name        String
+  tokenHash   String    @unique
+  tokenPrefix String
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Session {

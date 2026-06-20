@@ -4,6 +4,7 @@ import { getRequestUser } from "@/lib/auth-session";
 import { prisma } from "@/lib/prisma";
 import { createSiteKey } from "@/lib/site-key";
 import { normalizeSlug, slugFromProjectName, validateSlug } from "@/lib/slug";
+import { getProjectUrl } from "@/lib/urls";
 
 const createProjectSchema = z.object({
   name: z
@@ -67,4 +68,36 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: "创建项目失败" }, { status: 500 });
   }
+}
+
+export async function GET(request: Request) {
+  const user = await getRequestUser(request);
+
+  if (!user) {
+    return NextResponse.json({ error: "请先登录" }, { status: 401 });
+  }
+
+  const projects = await prisma.project.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: "desc" },
+    include: {
+      deployments: {
+        orderBy: { createdAt: "desc" },
+        take: 1
+      }
+    }
+  });
+
+  return NextResponse.json({
+    projects: projects.map((project) => ({
+      id: project.id,
+      name: project.name,
+      slug: project.slug,
+      siteKey: project.siteKey,
+      url: getProjectUrl(project.siteKey, request.headers.get("host")),
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+      latestDeployment: project.deployments[0] ?? null
+    }))
+  });
 }

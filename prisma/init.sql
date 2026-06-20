@@ -28,6 +28,23 @@ CREATE TABLE IF NOT EXISTS "user" (
 
 CREATE UNIQUE INDEX IF NOT EXISTS "user_email_key" ON "user"("email");
 
+CREATE TABLE IF NOT EXISTS "ApiToken" (
+  "id" TEXT NOT NULL PRIMARY KEY,
+  "userId" TEXT NOT NULL,
+  "name" TEXT NOT NULL,
+  "tokenHash" TEXT NOT NULL,
+  "tokenPrefix" TEXT NOT NULL,
+  "lastUsedAt" DATETIME,
+  "expiresAt" DATETIME,
+  "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "ApiToken_userId_fkey"
+    FOREIGN KEY ("userId") REFERENCES "user" ("id")
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS "ApiToken_tokenHash_key" ON "ApiToken"("tokenHash");
+CREATE INDEX IF NOT EXISTS "ApiToken_userId_idx" ON "ApiToken"("userId");
+
 CREATE TABLE IF NOT EXISTS "session" (
   "id" TEXT NOT NULL PRIMARY KEY,
   "userId" TEXT NOT NULL,

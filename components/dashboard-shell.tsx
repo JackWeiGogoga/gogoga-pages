@@ -13,6 +13,7 @@ import {
   Menu,
   Rocket,
   Settings,
+  KeyRound,
   X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,11 @@ const navItems = [
     title: "项目",
     href: "/dashboard",
     icon: Folder,
+  },
+  {
+    title: "API Token",
+    href: "/dashboard/tokens",
+    icon: KeyRound,
   },
 ];
 
@@ -194,6 +200,7 @@ function Breadcrumbs({
   pathname: string;
 }) {
   const onProjectPage = pathname.startsWith("/dashboard/projects");
+  const onTokenPage = pathname.startsWith("/dashboard/tokens");
 
   return (
     <div className="flex min-w-0 items-center gap-1.5 text-sm">
@@ -207,11 +214,11 @@ function Breadcrumbs({
         >
           项目
         </Link>
-        {onProjectPage ? (
+        {onProjectPage || onTokenPage ? (
           <>
             <span className="shrink-0 text-muted-foreground/60">/</span>
             <span className="truncate font-medium text-foreground">
-              {details?.title ?? "项目详情"}
+              {details?.title ?? (onTokenPage ? "API Token" : "项目详情")}
             </span>
           </>
         ) : null}
@@ -267,7 +274,9 @@ function SidebarContent({
           const active =
             item.href === "/dashboard" && item.title === "概览"
               ? pathname === "/dashboard"
-              : pathname.startsWith("/dashboard/projects");
+              : item.href === "/dashboard/tokens"
+                ? pathname.startsWith("/dashboard/tokens")
+                : pathname.startsWith("/dashboard/projects");
 
           return (
             <Link

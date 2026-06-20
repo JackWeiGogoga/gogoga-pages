@@ -129,6 +129,12 @@ Caddy 配置参考：
 deploy/caddy/pages.Caddyfile
 ```
 
+## Agent 工具
+
+CLI、MCP 和 Skill 使用说明：
+
+- [CLI, MCP, and Skill usage](docs/agent-tools.md)
+
 ## 安全边界
 
 管理后台已接入 Better Auth 邮箱密码登录。正式暴露到公网前，务必设置强随机 `BETTER_AUTH_SECRET`。

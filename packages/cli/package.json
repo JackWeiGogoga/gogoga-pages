@@ -1,0 +1,13 @@
+{
+  "name": "@gogoga/pages-cli",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "gogoga": "./src/index.mjs"
+  },
+  "private": false,
+  "dependencies": {
+    "@gogoga/pages-sdk": "0.1.0",
+    "yazl": "^3.3.1"
+  }
+}

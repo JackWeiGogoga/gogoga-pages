@@ -62,3 +62,35 @@ export async function POST(
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ projectId: string }> }
+) {
+  const user = await getRequestUser(request);
+
+  if (!user) {
+    return NextResponse.json({ error: "请先登录" }, { status: 401 });
+  }
+
+  const { projectId } = await params;
+  const project = await prisma.project.findFirst({
+    where: {
+      id: projectId,
+      userId: user.id
+    },
+    select: { id: true }
+  });
+
+  if (!project) {
+    return NextResponse.json({ error: "项目不存在" }, { status: 404 });
+  }
+
+  const deployments = await prisma.deployment.findMany({
+    where: { projectId },
+    orderBy: { createdAt: "desc" },
+    take: 50
+  });
+
+  return NextResponse.json({ deployments });
+}

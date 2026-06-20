@@ -1,0 +1,11 @@
+interface:
+  display_name: "Gogoga Pages"
+  short_description: "Deploy and manage Gogoga Pages static sites."
+  default_prompt: "Deploy this project with Gogoga Pages."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "gogoga-pages"
+      description: "Official Gogoga Pages MCP server"
+      transport: "stdio"
