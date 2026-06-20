@@ -7,7 +7,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import yazl from "yazl";
 import { z } from "zod";
-import { GogogaPagesClient } from "../../sdk/src/index.mjs";
+import { GogogaPagesClient } from "@gogoga/pages-sdk";
 
 const client = new GogogaPagesClient();
 

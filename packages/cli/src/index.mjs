@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { createWriteStream } from "node:fs";
 import yazl from "yazl";
-import { GogogaPagesClient } from "../../sdk/src/index.mjs";
+import { GogogaPagesClient } from "@gogoga/pages-sdk";
 
 async function main() {
   const parsed = parseArgs(process.argv.slice(2));
