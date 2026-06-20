@@ -19,15 +19,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth-session";
 import { getProjectDomain, getProjectUrl } from "@/lib/urls";
 import { CreateProjectForm } from "./project-form";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
+  const user = await requireUser();
   const requestHost = (await headers()).get("host");
   const [projects, deploymentCount] = await Promise.all([
     prisma.project.findMany({
+      where: { userId: user.id },
       orderBy: { createdAt: "desc" },
       include: {
         deployments: {
@@ -36,7 +39,13 @@ export default async function DashboardPage() {
         },
       },
     }),
-    prisma.deployment.count(),
+    prisma.deployment.count({
+      where: {
+        project: {
+          userId: user.id,
+        },
+      },
+    }),
   ]);
   const readyCount = projects.filter(
     (project) => project.deployments[0]?.status === "ready",

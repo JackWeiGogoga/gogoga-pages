@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { getRequestUser } from "@/lib/auth-session";
 import { prisma } from "@/lib/prisma";
 import { normalizeSlug, slugFromProjectName, validateSlug } from "@/lib/slug";
 
@@ -13,6 +14,12 @@ const createProjectSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const user = await getRequestUser(request);
+
+  if (!user) {
+    return NextResponse.json({ error: "请先登录" }, { status: 401 });
+  }
+
   const parsed = createProjectSchema.safeParse(await request.json().catch(() => null));
 
   if (!parsed.success) {
@@ -31,6 +38,7 @@ export async function POST(request: Request) {
   try {
     const project = await prisma.project.create({
       data: {
+        userId: user.id,
         name: parsed.data.name,
         slug: slugResult.slug
       }

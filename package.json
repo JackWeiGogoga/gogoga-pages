@@ -15,10 +15,12 @@
     "db:init:prod": "sh -c 'mkdir -p /data/db && sqlite3 /data/db/app.db < prisma/init.sql'"
   },
   "dependencies": {
+    "@better-auth/prisma-adapter": "^1.6.20",
     "@prisma/client": "^6.1.0",
     "@radix-ui/react-dialog": "^1.1.17",
     "@radix-ui/react-label": "^2.1.10",
     "@radix-ui/react-slot": "^1.3.0",
+    "better-auth": "^1.6.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
@@ -28,7 +30,7 @@
     "react-dom": "^19.0.0",
     "tailwind-merge": "^2.6.0",
     "yauzl": "^3.2.0",
-    "zod": "^3.24.1"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

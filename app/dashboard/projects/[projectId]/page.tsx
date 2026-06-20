@@ -10,6 +10,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { listPublishedHtmlFiles } from "@/lib/deploy";
+import { requireUser } from "@/lib/auth-session";
 import { prisma } from "@/lib/prisma";
 import { getProjectDomain, getProjectUrl } from "@/lib/urls";
 import { UploadDeploymentForm } from "./upload-form";
@@ -22,10 +23,14 @@ export default async function ProjectPage({
 }: {
   params: Promise<{ projectId: string }>;
 }) {
+  const user = await requireUser();
   const { projectId } = await params;
   const requestHost = (await headers()).get("host");
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
+  const project = await prisma.project.findFirst({
+    where: {
+      id: projectId,
+      userId: user.id
+    },
     include: {
       deployments: {
         orderBy: { createdAt: "desc" }

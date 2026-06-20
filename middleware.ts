@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
   const localSuffix = ".localhost";
   const productionSuffix = `.${siteDomain}`;
 
-  if (pathname.startsWith("/site-preview") || pathname.startsWith("/_next")) {
+  if (pathname.startsWith("/site-preview") || pathname.startsWith("/_next") || pathname.startsWith("/api")) {
     return NextResponse.next();
   }
 
