@@ -1,3 +1,5 @@
+import { pinyin } from "pinyin-pro";
+
 const reservedSlugs = new Set([
   "app",
   "api",
@@ -17,6 +19,16 @@ export function normalizeSlug(value: string) {
     .replace(/[^a-z0-9-]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .replace(/-{2,}/g, "-");
+}
+
+export function slugFromProjectName(value: string) {
+  return normalizeSlug(
+    pinyin(value, {
+      toneType: "none",
+      type: "array",
+      nonZh: "consecutive"
+    }).join("-")
+  );
 }
 
 export function validateSlug(value: string) {

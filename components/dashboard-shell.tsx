@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import {
   Activity,
   Database,
+  ExternalLink,
   Folder,
   Globe2,
   LayoutDashboard,
@@ -14,6 +15,7 @@ import {
   Settings,
   X
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -49,6 +51,24 @@ const secondaryItems = [
   }
 ];
 
+type HeaderTag = {
+  label: string;
+  className?: string;
+};
+
+type HeaderDetails = {
+  title: string;
+  tags?: HeaderTag[];
+  action?: {
+    href: string;
+    label: string;
+  };
+};
+
+const DashboardHeaderContext = createContext<((details: HeaderDetails | null) => void) | null>(
+  null
+);
+
 export function DashboardShell({
   children,
   siteDomain
@@ -58,8 +78,10 @@ export function DashboardShell({
 }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [headerDetails, setHeaderDetails] = useState<HeaderDetails | null>(null);
 
   return (
+    <DashboardHeaderContext.Provider value={setHeaderDetails}>
     <div className="h-screen overflow-hidden bg-sidebar text-foreground">
       <div className="flex h-screen overflow-hidden">
         <aside className="hidden h-screen w-64 shrink-0 overflow-y-auto bg-sidebar px-3 py-4 md:block">
@@ -92,8 +114,8 @@ export function DashboardShell({
         ) : null}
 
         <main className="flex min-h-0 min-w-0 flex-1 flex-col bg-background md:m-2 md:rounded-xl md:shadow-sm">
-          <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:rounded-t-xl lg:px-6">
-            <div className="flex items-center gap-3">
+          <header className="sticky top-0 z-20 flex min-h-12 shrink-0 items-center justify-between gap-3 border-b bg-background/95 px-4 py-2 backdrop-blur md:rounded-t-xl lg:px-6">
+            <div className="flex min-w-0 items-center gap-3">
               <Button
                 aria-label="打开导航"
                 className="md:hidden"
@@ -104,20 +126,68 @@ export function DashboardShell({
               >
                 <Menu className="h-4 w-4" />
               </Button>
-              <div>
-                <div className="text-sm font-medium">Gogoga Pages</div>
-                <div className="hidden text-xs text-muted-foreground sm:block">
-                  app.{siteDomain}
-                </div>
-              </div>
+              <Breadcrumbs details={headerDetails} pathname={pathname} />
             </div>
-            <div className="rounded-md border bg-muted/40 px-2.5 py-1 text-xs text-muted-foreground">
-              Static deployments
-            </div>
+            {headerDetails?.action ? (
+              <Button asChild className="shrink-0" variant="outline" size="sm">
+                <a href={headerDetails.action.href} target="_blank" rel="noreferrer">
+                  {headerDetails.action.label}
+                  <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                </a>
+              </Button>
+            ) : null}
           </header>
           <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
         </main>
       </div>
+    </div>
+    </DashboardHeaderContext.Provider>
+  );
+}
+
+export function DashboardHeaderDetails({
+  action,
+  tags = [],
+  title
+}: HeaderDetails) {
+  const setHeaderDetails = useContext(DashboardHeaderContext);
+  const details = useMemo(() => ({ action, tags, title }), [action, tags, title]);
+
+  useEffect(() => {
+    setHeaderDetails?.(details);
+    return () => setHeaderDetails?.(null);
+  }, [details, setHeaderDetails]);
+
+  return null;
+}
+
+function Breadcrumbs({ details, pathname }: { details: HeaderDetails | null; pathname: string }) {
+  const onProjectPage = pathname.startsWith("/dashboard/projects");
+
+  return (
+    <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-sm">
+      <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5">
+        <Link className="shrink-0 text-muted-foreground transition-colors hover:text-foreground" href="/dashboard">
+          Projects
+        </Link>
+        {onProjectPage ? (
+          <>
+            <span className="shrink-0 text-muted-foreground/60">/</span>
+            <span className="truncate font-medium text-foreground">
+              {details?.title ?? "Project"}
+            </span>
+          </>
+        ) : null}
+      </nav>
+      {details?.tags?.length ? (
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+          {details.tags.map((tag) => (
+            <Badge className={cn("bg-background text-muted-foreground", tag.className)} key={tag.label}>
+              {tag.label}
+            </Badge>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

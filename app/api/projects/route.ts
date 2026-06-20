@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { normalizeSlug, validateSlug } from "@/lib/slug";
+import { normalizeSlug, slugFromProjectName, validateSlug } from "@/lib/slug";
 
 const createProjectSchema = z.object({
   name: z
     .string()
     .trim()
     .min(1, "项目名称不能为空")
-    .max(80, "项目名称太长")
-    .regex(/^[A-Za-z0-9][A-Za-z0-9 -]*$/, "项目名称只能包含英文字母、数字、空格和中划线"),
+    .max(80, "项目名称太长"),
   slug: z.string().trim().optional()
 });
 
@@ -21,7 +20,9 @@ export async function POST(request: Request) {
   }
 
   const requestedSlug = parsed.data.slug;
-  const slugResult = validateSlug(requestedSlug ? requestedSlug : normalizeSlug(parsed.data.name));
+  const slugResult = validateSlug(
+    requestedSlug ? normalizeSlug(requestedSlug) : slugFromProjectName(parsed.data.name)
+  );
 
   if (!slugResult.ok) {
     return NextResponse.json({ error: slugResult.error }, { status: 400 });

@@ -80,7 +80,7 @@ export function CreateProjectForm() {
         <DialogHeader>
           <DialogTitle>创建项目</DialogTitle>
           <DialogDescription>
-            项目名称只能使用英文；域名 slug 会根据名称自动生成。可同时上传静态文件。
+            项目名称支持中文；域名 slug 会根据名称自动生成拼音。可同时上传静态文件。
           </DialogDescription>
         </DialogHeader>
         <form className="grid gap-4" onSubmit={onSubmit}>
@@ -89,10 +89,8 @@ export function CreateProjectForm() {
             <Input
               id={nameId}
               name="name"
-              pattern="[A-Za-z0-9][A-Za-z0-9 -]*"
-              placeholder="My Blog"
+              placeholder="我的博客"
               required
-              title="只能包含英文字母、数字、空格和中划线"
             />
           </div>
           <div className="grid gap-2">

@@ -123,7 +123,9 @@ async function deployFiles(
   });
   const activeDeployment = project.deployments[0];
 
-  if (mode === "merge" && !activeDeployment) {
+  const effectiveMode = mode === "merge" && !activeDeployment && removePaths.length === 0 ? "replace" : mode;
+
+  if (effectiveMode === "merge" && !activeDeployment) {
     throw new Error("当前项目还没有可增量更新的已激活部署");
   }
 
@@ -147,7 +149,7 @@ async function deployFiles(
     });
 
     await fs.rm(targetDir, { recursive: true, force: true });
-    if (mode === "merge" && activeDeployment) {
+    if (effectiveMode === "merge" && activeDeployment) {
       await fs.cp(activeDeployment.storagePath, targetDir, {
         recursive: true,
         force: true,
@@ -158,7 +160,9 @@ async function deployFiles(
     }
 
     const previousManifest =
-      mode === "merge" && activeDeployment ? await readDeploymentManifest(activeDeployment.storagePath) : null;
+      effectiveMode === "merge" && activeDeployment
+        ? await readDeploymentManifest(activeDeployment.storagePath)
+        : null;
     let manifest: DeploymentManifest;
 
     if (kind === "zip") {
@@ -178,7 +182,7 @@ async function deployFiles(
       };
     } else {
       manifest =
-        mode === "merge" && previousManifest
+        effectiveMode === "merge" && previousManifest
           ? previousManifest
           : {
               kind: "html",
@@ -186,13 +190,13 @@ async function deployFiles(
               files: []
             };
 
-      if (mode === "merge" && removePaths.length > 0) {
+      if (effectiveMode === "merge" && removePaths.length > 0) {
         await removePublishedHtmlFiles(targetDir, removePaths);
         manifest.files = manifest.files.filter((file) => !removePaths.includes(file.path));
       }
 
       const publishResult = await publishHtmlFiles(files, targetDir, {
-        singleHtmlAsRoot: mode === "replace"
+        singleHtmlAsRoot: effectiveMode === "replace"
       });
 
       manifest = mergeHtmlManifest(manifest, publishResult.manifest);
@@ -497,7 +501,10 @@ async function writeGeneratedIndex(targetDir: string, files: DeploymentManifest[
 
 async function isGeneratedIndex(indexPath: string) {
   const html = await fs.readFile(indexPath, "utf8").catch(() => "");
-  return html.includes("<title>Pages</title>") && html.includes("<h1>Pages</h1>");
+  return (
+    html.includes('data-gogoga-generated-index="true"') ||
+    (html.includes("<title>Pages</title>") && html.includes("<h1>Pages</h1>"))
+  );
 }
 
 function getManifestPath(targetDir: string) {
@@ -708,10 +715,19 @@ function uniqueSlug(slug: string, usedSlugs: Set<string>) {
 }
 
 function renderGeneratedIndex(pages: Array<{ title: string; href: string }>) {
-  const links = pages
+  const pageItems = pages
     .map(
-      (page) =>
-        `<li><a href="${escapeHtml(page.href)}">${escapeHtml(page.title || page.href)}</a></li>`
+      (page, index) => {
+        const title = page.title || page.href;
+
+        return `<a class="page-item" href="${escapeHtml(page.href)}" aria-label="打开 ${escapeHtml(title)}">
+        <span class="page-main">
+          <strong>${escapeHtml(title)}</strong>
+          <span>${escapeHtml(page.href)}</span>
+        </span>
+        <span class="page-index">${String(index + 1).padStart(2, "0")}</span>
+      </a>`;
+      }
     )
     .join("");
 
@@ -721,10 +737,288 @@ function renderGeneratedIndex(pages: Array<{ title: string; href: string }>) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pages</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --soft: #f3f4f6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .shell {
+      width: min(1040px, 100%);
+      margin: 0 auto;
+      padding: 32px 20px 40px;
+    }
+
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+
+    .summary {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    .count {
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .view-toggle {
+      display: inline-grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      padding: 2px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--soft);
+    }
+
+    .view-toggle button {
+      min-width: 58px;
+      min-height: 30px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .view-toggle button[aria-pressed="true"] {
+      color: var(--text);
+      background: var(--surface);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
+
+    .pages {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+
+    .page-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: start;
+      min-height: 104px;
+      padding: 14px;
+      color: inherit;
+      text-decoration: none;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      transition: border-color 120ms ease, background-color 120ms ease;
+    }
+
+    .page-item:hover,
+    .page-item:focus-visible {
+      border-color: #9ca3af;
+      background: #fcfcfc;
+      outline: none;
+    }
+
+    .page-main {
+      min-width: 0;
+    }
+
+    .page-main strong,
+    .page-main span {
+      display: block;
+      overflow-wrap: anywhere;
+    }
+
+    .page-main strong {
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    .page-main span {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .page-index {
+      align-self: start;
+      padding: 3px 6px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .pages[data-view="list"] {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .pages[data-view="list"] .page-item {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      min-height: 58px;
+      padding: 10px 12px;
+    }
+
+    .empty {
+      padding: 20px;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        padding: 20px 12px 28px;
+      }
+
+      .hero {
+        margin-bottom: 12px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      .summary {
+        font-size: 13px;
+      }
+
+      .view-toggle {
+        display: none;
+      }
+
+      .pages,
+      .pages[data-view="card"],
+      .pages[data-view="list"] {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .page-item,
+      .pages[data-view="card"] .page-item,
+      .pages[data-view="list"] .page-item {
+        min-height: 58px;
+        padding: 10px 12px;
+      }
+
+      .page-main strong {
+        font-size: 14px;
+      }
+
+      .page-main span {
+        font-size: 12px;
+      }
+    }
+  </style>
 </head>
-<body>
-  <h1>Pages</h1>
-  <ul>${links}</ul>
+<body data-gogoga-generated-index="true">
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <h1>Pages</h1>
+        <p class="summary">选择一个 HTML 页面打开预览。</p>
+      </div>
+    </header>
+
+    <section class="toolbar" aria-label="页面视图设置">
+      <span class="count">共 ${pages.length} 个页面</span>
+      <div class="view-toggle" role="group" aria-label="切换展示方式">
+        <button type="button" data-view-button="card" aria-pressed="true">卡片</button>
+        <button type="button" data-view-button="list" aria-pressed="false">列表</button>
+      </div>
+    </section>
+
+    ${
+      pages.length > 0
+        ? `<nav class="pages" data-view="card" aria-label="页面列表">${pageItems}</nav>`
+        : `<div class="empty">暂无可展示的 HTML 页面。</div>`
+    }
+  </main>
+  <script>
+    (function () {
+      var pages = document.querySelector(".pages");
+      var buttons = Array.prototype.slice.call(document.querySelectorAll("[data-view-button]"));
+
+      if (!pages || buttons.length === 0) {
+        return;
+      }
+
+      function setView(view) {
+        pages.setAttribute("data-view", view);
+        buttons.forEach(function (button) {
+          button.setAttribute("aria-pressed", String(button.getAttribute("data-view-button") === view));
+        });
+
+        try {
+          localStorage.setItem("gogoga-pages-view", view);
+        } catch (error) {
+        }
+      }
+
+      buttons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          setView(button.getAttribute("data-view-button") || "card");
+        });
+      });
+
+      try {
+        var savedView = localStorage.getItem("gogoga-pages-view");
+        if (savedView === "card" || savedView === "list") {
+          setView(savedView);
+        }
+      } catch (error) {
+      }
+    })();
+  </script>
 </body>
 </html>
 `;

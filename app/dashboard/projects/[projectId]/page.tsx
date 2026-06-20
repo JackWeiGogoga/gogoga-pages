@@ -1,9 +1,7 @@
-import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { DashboardHeaderDetails } from "@/components/dashboard-shell";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -50,44 +48,41 @@ export default async function ProjectPage({
     : [];
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <div>
-        <Button asChild variant="ghost" size="sm">
-          <Link href="/dashboard">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            返回项目
-          </Link>
-        </Button>
-      </div>
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 lg:px-6">
+      <DashboardHeaderDetails
+        action={{ href: projectUrl, label: "访问站点" }}
+        tags={[
+          activeDeployment
+            ? { label: "online", className: "border-green-200 bg-green-50 text-green-700" }
+            : { label: "未部署" },
+          { label: domain },
+          { label: `${project.deployments.length} 次部署` },
+          { label: `${currentHtmlFiles.length} 个 HTML 页面` }
+        ]}
+        title={project.name}
+      />
 
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <div className="mb-3 inline-flex items-center rounded-md border bg-background px-3 py-1 text-sm text-muted-foreground">
-            {domain}
-          </div>
-          <h1 className="truncate text-3xl font-semibold tracking-tight">{project.name}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            上传新版本、查看部署历史，并在需要时回滚到旧版本。
-          </p>
-        </div>
-        <Button asChild variant="outline">
-          <a href={projectUrl} target="_blank" rel="noreferrer">
-            访问站点
-            <ExternalLink className="ml-2 h-4 w-4" />
-          </a>
-        </Button>
-      </header>
-
-      <UploadDeploymentForm currentHtmlFiles={currentHtmlFiles} projectId={project.id} />
+      <UploadDeploymentForm
+        currentHtmlFiles={currentHtmlFiles}
+        hasActiveDeployment={Boolean(activeDeployment)}
+        projectId={project.id}
+      />
 
       <Card>
-        <CardHeader className="border-b">
-          <CardTitle>部署历史</CardTitle>
-          <CardDescription>回滚会把 current 软链接切回对应部署目录。</CardDescription>
+        <CardHeader className="flex flex-col gap-1 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-base">部署历史</CardTitle>
+            <CardDescription className="text-xs">查看版本状态并回滚。</CardDescription>
+          </div>
+          {activeId ? (
+            <span className="truncate text-xs text-muted-foreground sm:max-w-72">
+              active: {activeId}
+            </span>
+          ) : null}
         </CardHeader>
         <CardContent className="p-0">
           {project.deployments.length === 0 ? (
-            <div className="flex min-h-48 items-center justify-center px-6 text-sm text-muted-foreground">
+            <div className="flex min-h-32 items-center justify-center px-6 text-sm text-muted-foreground">
               还没有部署记录。
             </div>
           ) : (
@@ -95,17 +90,17 @@ export default async function ProjectPage({
               <table className="w-full text-left text-sm">
                 <thead className="border-b bg-muted/40 text-muted-foreground">
                   <tr>
-                    <th className="px-4 py-3 font-medium">状态</th>
-                    <th className="px-4 py-3 font-medium">部署 ID</th>
-                    <th className="px-4 py-3 font-medium">文件</th>
-                    <th className="px-4 py-3 font-medium">时间</th>
-                    <th className="px-4 py-3 text-right font-medium">操作</th>
+                    <th className="px-3 py-2 font-medium">状态</th>
+                    <th className="px-3 py-2 font-medium">部署 ID</th>
+                    <th className="px-3 py-2 font-medium">文件</th>
+                    <th className="px-3 py-2 font-medium">时间</th>
+                    <th className="px-3 py-2 text-right font-medium">操作</th>
                   </tr>
                 </thead>
                 <tbody>
                   {project.deployments.map((deployment) => (
                     <tr key={deployment.id} className="border-b last:border-0">
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2">
                         <Badge
                           className={
                             deployment.status === "ready"
@@ -118,9 +113,9 @@ export default async function ProjectPage({
                           {deployment.status}
                         </Badge>
                       </td>
-                      <td className="max-w-md px-4 py-3 font-mono text-xs">
+                      <td className="max-w-sm px-3 py-2 font-mono text-xs">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span>{deployment.id}</span>
+                          <span className="truncate">{deployment.id}</span>
                           {deployment.id === activeId ? (
                             <span className="rounded bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
                               active
@@ -131,13 +126,13 @@ export default async function ProjectPage({
                           <div className="mt-1 text-xs text-destructive">{deployment.error}</div>
                         ) : null}
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
                         {deployment.fileCount} / {formatBytes(deployment.totalBytes)}
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
                         {deployment.createdAt.toLocaleString("zh-CN")}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-3 py-2 text-right">
                         <RollbackButton
                           disabled={deployment.status !== "ready" || deployment.id === activeId}
                           projectId={project.id}

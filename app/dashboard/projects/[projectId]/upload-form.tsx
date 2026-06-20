@@ -25,9 +25,11 @@ type CurrentHtmlFile = {
 
 export function UploadDeploymentForm({
   currentHtmlFiles,
+  hasActiveDeployment,
   projectId
 }: {
   currentHtmlFiles: CurrentHtmlFile[];
+  hasActiveDeployment: boolean;
   projectId: string;
 }) {
   const [error, setError] = useState("");
@@ -86,16 +88,16 @@ export function UploadDeploymentForm({
 
   return (
     <Card>
-      <CardHeader className="border-b">
-        <CardTitle>上传部署</CardTitle>
-        <CardDescription>
-          完整替换会生成全新版本；增量新增会基于当前版本追加或覆盖 html 文件。
-        </CardDescription>
+      <CardHeader className="border-b px-4 py-3">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="text-base">上传部署</CardTitle>
+          <CardDescription className="text-xs">替换发布或增量更新 HTML 文件</CardDescription>
+        </div>
       </CardHeader>
-      <CardContent>
-        <form className="grid gap-4 pt-6" onSubmit={onSubmit}>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className="flex cursor-pointer gap-3 rounded-lg border bg-background p-3 text-sm">
+      <CardContent className="p-4">
+        <form className="grid gap-3" onSubmit={onSubmit}>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className="flex cursor-pointer gap-2 rounded-md border bg-background p-2.5 text-sm">
               <input
                 checked={mode === "replace"}
                 className="mt-1"
@@ -109,13 +111,20 @@ export function UploadDeploymentForm({
               />
               <span>
                 <span className="block font-medium">完整替换</span>
-                <span className="text-muted-foreground">适合上传 zip 或重新发布全部 html。</span>
+                <span className="text-xs text-muted-foreground">上传 zip 或重新发布全部 html。</span>
               </span>
             </label>
-            <label className="flex cursor-pointer gap-3 rounded-lg border bg-background p-3 text-sm">
+            <label
+              className={
+                hasActiveDeployment
+                  ? "flex cursor-pointer gap-2 rounded-md border bg-background p-2.5 text-sm"
+                  : "flex cursor-not-allowed gap-2 rounded-md border bg-muted/30 p-2.5 text-sm opacity-70"
+              }
+            >
               <input
                 checked={mode === "merge"}
                 className="mt-1"
+                disabled={!hasActiveDeployment}
                 name="mode"
                 onChange={() => setMode("merge")}
                 type="radio"
@@ -123,14 +132,23 @@ export function UploadDeploymentForm({
               />
               <span>
                 <span className="block font-medium">新增/覆盖 html</span>
-                <span className="text-muted-foreground">保留当前版本，只追加或覆盖本次 html。</span>
+                <span className="text-xs text-muted-foreground">
+                  {hasActiveDeployment
+                    ? "保留当前版本，追加或覆盖 html。"
+                    : "首次部署请使用完整替换上传资源。"}
+                </span>
               </span>
             </label>
           </div>
 
           <div className="grid gap-2">
-            <Label>部署文件</Label>
-            <FileDropzone files={files} onFilesChange={setFiles} required={mode === "replace"} />
+            <Label className="text-xs text-muted-foreground">部署文件</Label>
+            <FileDropzone
+              compact
+              files={files}
+              onFilesChange={setFiles}
+              required={mode === "replace"}
+            />
             {error ? <p className="text-sm text-destructive">{error}</p> : null}
           </div>
 
@@ -145,17 +163,17 @@ export function UploadDeploymentForm({
                 ) : null}
               </div>
               {currentHtmlFiles.length === 0 ? (
-                <div className="rounded-lg border bg-muted/20 p-4 text-sm text-muted-foreground">
+                <div className="rounded-md border bg-muted/20 p-3 text-sm text-muted-foreground">
                   当前版本没有可展示的部署文件。
                 </div>
               ) : (
-                <div className="max-h-64 overflow-y-auto rounded-lg border">
+                <div className="max-h-56 overflow-y-auto rounded-md border">
                   {currentHtmlFiles.map((file) => {
                     const markedForRemoval = removePaths.includes(file.path);
 
                     return (
                       <div
-                        className="flex items-center justify-between gap-3 border-b px-3 py-2 text-sm last:border-0 hover:bg-muted/40"
+                        className="flex items-center justify-between gap-3 border-b px-3 py-1.5 text-sm last:border-0 hover:bg-muted/40"
                         key={file.path}
                       >
                         <span className="flex min-w-0 items-center gap-2">
@@ -214,7 +232,7 @@ export function UploadDeploymentForm({
                 </div>
               )}
               <p className="text-xs text-muted-foreground">
-                删除会创建一个新版本，不会直接修改当前版本；如果移除首页且没有上传新的 index.html，发布会失败。
+                删除会创建新版本；移除首页时需上传新的 index.html。
               </p>
             </div>
           ) : null}

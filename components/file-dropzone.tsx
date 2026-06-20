@@ -8,10 +8,12 @@ import { cn } from "@/lib/utils";
 const accept = ".zip,.html,.htm,application/zip,text/html";
 
 export function FileDropzone({
+  compact = false,
   files,
   onFilesChange,
   required = false
 }: {
+  compact?: boolean;
   files: File[];
   onFilesChange: (files: File[]) => void;
   required?: boolean;
@@ -42,6 +44,7 @@ export function FileDropzone({
       <label
         className={cn(
           "flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed bg-muted/20 px-4 py-6 text-center transition-colors hover:bg-muted/40",
+          compact && "min-h-20 py-4",
           dragging && "border-primary bg-muted/60"
         )}
         htmlFor={inputId}
@@ -63,7 +66,7 @@ export function FileDropzone({
           setSelectedFiles(event.dataTransfer.files);
         }}
       >
-        <UploadCloud className="mb-3 h-6 w-6 text-muted-foreground" />
+        <UploadCloud className={cn("mb-3 h-6 w-6 text-muted-foreground", compact && "mb-2 h-5 w-5")} />
         <div className="text-sm font-medium">拖拽文件到这里，或点击选择</div>
         <div className="mt-1 text-xs text-muted-foreground">{summary}</div>
       </label>
