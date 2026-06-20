@@ -167,6 +167,8 @@ services:
       GOGOGA_DATA_DIR: "/data/gogoga"
       GOGOGA_SITE_DOMAIN: "pages.gogoga.top"
       GOGOGA_MAX_UPLOAD_MB: "100"
+      BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET}"
+      BETTER_AUTH_URL: "https://app.pages.gogoga.top"
     ports:
       - "127.0.0.1:3000:3000"
     volumes:
@@ -192,6 +194,7 @@ Initialize SQLite on first deploy:
 
 ```bash
 docker compose exec app npm run db:init:prod
+docker compose exec app npx prisma db push
 ```
 
 Verify:
@@ -539,4 +542,3 @@ Clean unused images:
 docker image prune
 docker image prune -a
 ```
-

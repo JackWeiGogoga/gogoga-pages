@@ -50,6 +50,8 @@ DATABASE_URL="file:/opt/gogoga-pages/data/app.db"
 GOGOGA_DATA_DIR="/data/gogoga"
 GOGOGA_SITE_DOMAIN="pages.gogoga.top"
 GOGOGA_MAX_UPLOAD_MB="100"
+BETTER_AUTH_SECRET="replace-with-a-random-32-byte-secret"
+BETTER_AUTH_URL="https://app.pages.gogoga.top"
 ```
 
 生产部署目录：
@@ -107,6 +109,7 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 ```bash
 docker compose -f docker-compose.prod.yml exec app npm run db:init:prod
+docker compose -f docker-compose.prod.yml exec app npx prisma db push
 ```
 
 Caddy 配置参考：
@@ -117,7 +120,7 @@ deploy/caddy/pages.Caddyfile
 
 ## 安全边界
 
-当前 MVP 尚未实现账号登录。正式暴露到公网前，至少先为 `app.pages.gogoga.top` 加 Nginx Basic Auth 或接入登录系统。
+管理后台已接入 Better Auth 邮箱密码登录。正式暴露到公网前，务必设置强随机 `BETTER_AUTH_SECRET`。
 
 上传部署已实现的校验：
 
