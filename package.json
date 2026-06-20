@@ -28,6 +28,7 @@
     "pinyin-pro": "^3.28.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "simple-icons": "^16.23.0",
     "tailwind-merge": "^2.6.0",
     "yauzl": "^3.2.0",
     "zod": "^4.4.3"
