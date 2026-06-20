@@ -1,0 +1,193 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import {
+  Activity,
+  Database,
+  Folder,
+  Globe2,
+  LayoutDashboard,
+  Menu,
+  Rocket,
+  Settings,
+  X
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+const navItems = [
+  {
+    title: "Dashboard",
+    href: "/dashboard",
+    icon: LayoutDashboard
+  },
+  {
+    title: "Projects",
+    href: "/dashboard",
+    icon: Folder
+  }
+];
+
+const secondaryItems = [
+  {
+    title: "Domains",
+    icon: Globe2
+  },
+  {
+    title: "Deployments",
+    icon: Activity
+  },
+  {
+    title: "Storage",
+    icon: Database
+  },
+  {
+    title: "Settings",
+    icon: Settings
+  }
+];
+
+export function DashboardShell({
+  children,
+  siteDomain
+}: {
+  children: React.ReactNode;
+  siteDomain: string;
+}) {
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <div className="h-screen overflow-hidden bg-sidebar text-foreground">
+      <div className="flex h-screen overflow-hidden">
+        <aside className="hidden h-screen w-64 shrink-0 overflow-y-auto bg-sidebar px-3 py-4 md:block">
+          <SidebarContent pathname={pathname} siteDomain={siteDomain} />
+        </aside>
+
+        {mobileOpen ? (
+          <div className="fixed inset-0 z-50 md:hidden">
+            <button
+              aria-label="关闭导航"
+              className="absolute inset-0 bg-black/40"
+              onClick={() => setMobileOpen(false)}
+              type="button"
+            />
+            <aside className="relative flex h-full w-72 flex-col bg-sidebar px-3 py-4 shadow-xl">
+              <div className="mb-2 flex justify-end">
+                <Button
+                  aria-label="关闭导航"
+                  onClick={() => setMobileOpen(false)}
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <SidebarContent pathname={pathname} siteDomain={siteDomain} />
+            </aside>
+          </div>
+        ) : null}
+
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col bg-background md:m-2 md:rounded-xl md:shadow-sm">
+          <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:rounded-t-xl lg:px-6">
+            <div className="flex items-center gap-3">
+              <Button
+                aria-label="打开导航"
+                className="md:hidden"
+                onClick={() => setMobileOpen(true)}
+                size="icon"
+                type="button"
+                variant="ghost"
+              >
+                <Menu className="h-4 w-4" />
+              </Button>
+              <div>
+                <div className="text-sm font-medium">Gogoga Pages</div>
+                <div className="hidden text-xs text-muted-foreground sm:block">
+                  app.{siteDomain}
+                </div>
+              </div>
+            </div>
+            <div className="rounded-md border bg-muted/40 px-2.5 py-1 text-xs text-muted-foreground">
+              Static deployments
+            </div>
+          </header>
+          <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function SidebarContent({
+  pathname,
+  siteDomain
+}: {
+  pathname: string;
+  siteDomain: string;
+}) {
+  return (
+    <div className="flex h-full flex-col">
+      <Link className="mb-5 flex items-center gap-3 rounded-lg px-2 py-2" href="/dashboard">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <Rocket className="h-4 w-4" />
+        </div>
+        <div className="min-w-0">
+          <div className="truncate text-sm font-semibold">Gogoga Inc.</div>
+          <div className="truncate text-xs text-sidebar-foreground/60">pages platform</div>
+        </div>
+      </Link>
+
+      <nav className="grid gap-1">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const active =
+            item.title === "Dashboard"
+              ? pathname === "/dashboard"
+              : pathname.startsWith("/dashboard/projects");
+
+          return (
+            <Link
+              className={cn(
+                "flex h-9 items-center gap-2 rounded-md px-2 text-sm text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                active && "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
+              )}
+              href={item.href}
+              key={item.title}
+            >
+              <Icon className="h-4 w-4" />
+              <span>{item.title}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="mt-8">
+        <div className="px-2 text-xs font-medium text-sidebar-foreground/50">Platform</div>
+        <nav className="mt-2 grid gap-1">
+          {secondaryItems.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <div
+                className="flex h-9 items-center gap-2 rounded-md px-2 text-sm text-sidebar-foreground/60"
+                key={item.title}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{item.title}</span>
+              </div>
+            );
+          })}
+        </nav>
+      </div>
+
+      <div className="mt-auto rounded-lg border border-sidebar-border bg-background/70 p-3">
+        <div className="text-xs font-medium text-sidebar-foreground">Default domain</div>
+        <div className="mt-1 break-all text-xs text-sidebar-foreground/60">*.{siteDomain}</div>
+      </div>
+    </div>
+  );
+}

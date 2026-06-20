@@ -11,8 +11,12 @@ export async function POST(
   const { projectId } = await params;
   const formData = await request.formData();
   const files = formData.getAll("file").filter((file): file is File => file instanceof File);
+  const mode = formData.get("mode") === "merge" ? "merge" : "replace";
+  const removePaths = formData
+    .getAll("removePath")
+    .filter((value): value is string => typeof value === "string");
 
-  if (files.length === 0) {
+  if (files.length === 0 && removePaths.length === 0) {
     return NextResponse.json({ error: "请上传 zip 或 html 文件" }, { status: 400 });
   }
 
@@ -31,7 +35,7 @@ export async function POST(
   }
 
   try {
-    const deployment = await deployStaticFiles(projectId, files);
+    const deployment = await deployStaticFiles(projectId, files, { mode, removePaths });
     return NextResponse.json(deployment, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "部署失败";
