@@ -1,10 +1,18 @@
+import fsSync from "node:fs";
 import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 
 export type GogogaClientOptions = {
   baseUrl?: string;
   token?: string;
   fetchImpl?: typeof fetch;
+};
+
+export type GogogaStoredConfig = {
+  baseUrl?: string;
+  token?: string;
+  updatedAt?: string;
 };
 
 export type Project = {
@@ -46,8 +54,11 @@ export class GogogaPagesClient {
   private readonly fetchImpl: typeof fetch;
 
   constructor(options: GogogaClientOptions = {}) {
-    this.baseUrl = normalizeBaseUrl(options.baseUrl ?? process.env.GOGOGA_BASE_URL ?? "https://app.pages.gogoga.top");
-    this.token = options.token ?? process.env.GOGOGA_API_TOKEN;
+    const storedConfig = loadGogogaConfig();
+    this.baseUrl = normalizeBaseUrl(
+      options.baseUrl ?? process.env.GOGOGA_BASE_URL ?? storedConfig.baseUrl ?? "https://app.pages.gogoga.top"
+    );
+    this.token = options.token ?? process.env.GOGOGA_API_TOKEN ?? storedConfig.token;
     this.fetchImpl = options.fetchImpl ?? fetch;
   }
 
@@ -120,7 +131,7 @@ export class GogogaPagesClient {
 
   private async request<T>(pathname: string, init: RequestInit = {}): Promise<T> {
     if (!this.token) {
-      throw new Error("Missing GOGOGA_API_TOKEN");
+      throw new Error("Missing Gogoga API token. Run \"gogoga login\" or set GOGOGA_API_TOKEN.");
     }
 
     const response = await this.fetchImpl(`${this.baseUrl}${pathname}`, {
@@ -140,6 +151,49 @@ export class GogogaPagesClient {
 
     return data as T;
   }
+}
+
+export function getGogogaConfigPath() {
+  const configRoot =
+    process.env.GOGOGA_CONFIG_DIR ??
+    process.env.XDG_CONFIG_HOME ??
+    (process.platform === "win32" && process.env.APPDATA
+      ? process.env.APPDATA
+      : path.join(os.homedir(), ".config"));
+
+  return path.join(configRoot, "gogoga-pages", "config.json");
+}
+
+export function loadGogogaConfig(): GogogaStoredConfig {
+  const configPath = getGogogaConfigPath();
+
+  try {
+    const raw = fsSync.readFileSync(configPath, "utf8");
+    const parsed = JSON.parse(raw) as GogogaStoredConfig;
+
+    return {
+      baseUrl: typeof parsed.baseUrl === "string" ? parsed.baseUrl : undefined,
+      token: typeof parsed.token === "string" ? parsed.token : undefined,
+      updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : undefined
+    };
+  } catch {
+    return {};
+  }
+}
+
+export async function saveGogogaConfig(config: GogogaStoredConfig) {
+  const configPath = getGogogaConfigPath();
+  await fs.mkdir(path.dirname(configPath), { recursive: true });
+  await fs.writeFile(
+    configPath,
+    `${JSON.stringify({ ...config, updatedAt: new Date().toISOString() }, null, 2)}\n`,
+    { mode: 0o600 }
+  );
+  await fs.chmod(configPath, 0o600).catch(() => undefined);
+}
+
+export async function clearGogogaConfig() {
+  await fs.rm(getGogogaConfigPath(), { force: true });
 }
 
 function normalizeBaseUrl(baseUrl: string) {

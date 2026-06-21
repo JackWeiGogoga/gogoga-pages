@@ -3,21 +3,45 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { createWriteStream } from "node:fs";
+import readline from "node:readline";
 import yazl from "yazl";
-import { GogogaPagesClient } from "@gogoga/pages-sdk";
+import {
+  clearGogogaConfig,
+  getGogogaConfigPath,
+  GogogaPagesClient,
+  loadGogogaConfig,
+  saveGogogaConfig
+} from "@gogoga/pages-sdk";
 
 async function main() {
   const parsed = parseArgs(process.argv.slice(2));
   const [resource, action] = parsed.command;
-  const client = new GogogaPagesClient({
-    baseUrl: stringFlag(parsed, "base-url"),
-    token: stringFlag(parsed, "token")
-  });
 
   if (!resource || resource === "help" || hasFlag(parsed, "help")) {
     printHelp();
     return;
   }
+
+  if (resource === "login") {
+    await login(parsed);
+    return;
+  }
+
+  if (resource === "logout") {
+    await clearGogogaConfig();
+    console.log(`Logged out. Removed ${getGogogaConfigPath()}`);
+    return;
+  }
+
+  if (resource === "auth" && action === "status") {
+    printAuthStatus();
+    return;
+  }
+
+  const client = new GogogaPagesClient({
+    baseUrl: stringFlag(parsed, "base-url"),
+    token: stringFlag(parsed, "token")
+  });
 
   if (resource === "projects" && action === "list") {
     const { projects } = await client.listProjects();
@@ -97,6 +121,50 @@ async function main() {
   }
 
   throw new Error(`Unknown command: ${[resource, action].filter(Boolean).join(" ")}`);
+}
+
+async function login(parsed) {
+  const currentConfig = loadGogogaConfig();
+  const defaultBaseUrl =
+    stringFlag(parsed, "base-url") ??
+    process.env.GOGOGA_BASE_URL ??
+    currentConfig.baseUrl ??
+    "https://app.pages.gogoga.top";
+  const promptedBaseUrl =
+    stringFlag(parsed, "base-url") ?? (await promptText(`Base URL (${defaultBaseUrl}): `));
+  const baseUrl = (promptedBaseUrl || defaultBaseUrl).replace(/\/+$/, "");
+  const token = stringFlag(parsed, "token") ?? (await promptHidden("API token: "));
+
+  if (!token) {
+    throw new Error("API token is required");
+  }
+
+  if (!hasFlag(parsed, "no-verify")) {
+    const client = new GogogaPagesClient({ baseUrl, token });
+    await client.listProjects();
+  }
+
+  await saveGogogaConfig({ baseUrl, token });
+  console.log(`Logged in to ${baseUrl}`);
+  console.log(`Credentials saved to ${getGogogaConfigPath()}`);
+}
+
+function printAuthStatus() {
+  const config = loadGogogaConfig();
+  const envBaseUrl = process.env.GOGOGA_BASE_URL;
+  const envToken = process.env.GOGOGA_API_TOKEN;
+  const baseUrl = envBaseUrl ?? config.baseUrl ?? "https://app.pages.gogoga.top";
+  const token = envToken ?? config.token;
+  const source = envToken || envBaseUrl ? "environment" : config.token || config.baseUrl ? "login config" : "default";
+
+  console.log(JSON.stringify({
+    authenticated: Boolean(token),
+    baseUrl,
+    source,
+    configPath: getGogogaConfigPath(),
+    tokenPrefix: token ? `${token.slice(0, 8)}...` : null,
+    updatedAt: config.updatedAt ?? null
+  }, null, 2));
 }
 
 async function prepareDeployInput(inputPath) {
@@ -200,7 +268,7 @@ function parseArgs(args) {
 function getCommand(args) {
   const [resource, action] = args;
 
-  if (resource === "projects" || resource === "deployments") {
+  if (resource === "projects" || resource === "deployments" || resource === "auth") {
     return action ? [resource, action] : [resource];
   }
 
@@ -226,10 +294,49 @@ function hasFlag(parsed, name) {
   return Boolean(parsed.flags[name]);
 }
 
+function promptText(question) {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stderr
+    });
+
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
+}
+
+function promptHidden(question) {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stderr,
+      terminal: true
+    });
+    let muted = false;
+
+    rl._writeToOutput = (value) => {
+      process.stderr.write(muted ? "*" : value);
+    };
+
+    rl.question(question, (answer) => {
+      rl.close();
+      process.stderr.write("\n");
+      resolve(answer.trim());
+    });
+    muted = true;
+  });
+}
+
 function printHelp() {
   console.log(`Gogoga Pages CLI
 
 Usage:
+  gogoga login [--base-url URL] [--token TOKEN] [--no-verify]
+  gogoga logout
+  gogoga auth status
   gogoga projects list [--base-url URL] [--token TOKEN]
   gogoga projects create <name> [--slug slug]
   gogoga deploy <file-or-dir> --project <project-id|slug|name> [--mode replace|merge]
@@ -237,8 +344,8 @@ Usage:
   gogoga rollback --project <project-id|slug|name> --deployment <deployment-id>
 
 Environment:
-  GOGOGA_API_TOKEN   API token used for Bearer authentication
-  GOGOGA_BASE_URL    Defaults to https://app.pages.gogoga.top
+  GOGOGA_API_TOKEN   Optional override for CI or temporary sessions
+  GOGOGA_BASE_URL    Optional override; login config is used by default
 `);
 }
 

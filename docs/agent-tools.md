@@ -17,16 +17,17 @@ Open the dashboard:
 
 Create a token and copy it immediately. The full token is shown only once.
 
-Set it in your shell:
+Log in locally:
+
+```bash
+npm install -g @gogoga/pages-cli
+gogoga login --base-url "https://app.pages.gogoga.top"
+```
+
+The token is stored in the user config file with `0600` permissions. Environment variables are still supported for CI and temporary overrides:
 
 ```bash
 export GOGOGA_API_TOKEN="ggp_xxx"
-export GOGOGA_BASE_URL="https://app.pages.gogoga.top"
-```
-
-For local testing:
-
-```bash
 export GOGOGA_BASE_URL="http://localhost:3000"
 ```
 
@@ -36,6 +37,13 @@ Install:
 
 ```bash
 npm install -g @gogoga/pages-cli
+gogoga login --base-url "https://app.pages.gogoga.top"
+```
+
+Check auth:
+
+```bash
+gogoga auth status
 ```
 
 List projects:
@@ -77,6 +85,13 @@ gogoga rollback --project my-site --deployment <deployment-id>
 The MCP server runs locally over stdio and calls the Gogoga Pages API with `GOGOGA_API_TOKEN`.
 
 Codex setup:
+
+```bash
+codex mcp add gogoga-pages \
+  -- npx -y @gogoga/pages-mcp
+```
+
+The MCP server reads the same login config as the CLI. For isolated CI or remote environments, pass environment variables explicitly:
 
 ```bash
 codex mcp add gogoga-pages \

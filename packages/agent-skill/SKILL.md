@@ -18,6 +18,7 @@ Prefer the Gogoga Pages MCP tools when available:
 If MCP tools are unavailable, use the official CLI:
 
 ```bash
+gogoga login
 gogoga projects list
 gogoga projects create <name>
 gogoga deploy <file-or-dir> --project <project-id>
@@ -39,12 +40,19 @@ npm install -g @gogoga/pages-cli
 
 ## Authentication
 
-Require `GOGOGA_API_TOKEN` before calling MCP or CLI commands. Do not invent tokens.
+Require a Gogoga API token before calling MCP or CLI commands. Do not invent tokens.
 
-Optional base URL override:
+For local CLI usage, prefer:
+
+```bash
+gogoga login
+```
+
+Environment variables are acceptable for CI, temporary sessions, or MCP servers running in isolated environments:
 
 ```bash
 export GOGOGA_BASE_URL="https://app.pages.gogoga.top"
+export GOGOGA_API_TOKEN="ggp_xxx"
 ```
 
 ## Deployment Workflow

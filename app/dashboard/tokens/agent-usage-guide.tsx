@@ -23,8 +23,7 @@ export function AgentUsageGuide({ baseUrl }: { baseUrl: string }) {
         icon: Terminal,
         code: `npm install -g @gogoga/pages-cli
 
-export GOGOGA_BASE_URL="${baseUrl}"
-export GOGOGA_API_TOKEN="ggp_xxx"
+gogoga login --base-url "${baseUrl}"
 
 gogoga projects list
 gogoga deploy ./dist --project <project-id-or-slug>`
@@ -35,8 +34,6 @@ gogoga deploy ./dist --project <project-id-or-slug>`
         description: "适合 Codex、Claude Code 等支持 MCP 的 agent，参数更结构化。",
         icon: Network,
         code: `codex mcp add gogoga-pages \\
-  --env GOGOGA_BASE_URL=${baseUrl} \\
-  --env GOGOGA_API_TOKEN=ggp_xxx \\
   -- npx -y @gogoga/pages-mcp`
       },
       {
@@ -64,7 +61,7 @@ cp -R packages/agent-skill .agents/skills/gogoga-pages
       <div className="grid gap-3 p-4 text-sm text-muted-foreground md:grid-cols-3">
         <div>
           <span className="font-medium text-foreground">1. 创建 token</span>
-          <span className="mt-1 block">完整值只显示一次，复制后放入环境变量。</span>
+          <span className="mt-1 block">完整值只显示一次，复制后通过 `gogoga login` 保存。</span>
         </div>
         <div>
           <span className="font-medium text-foreground">2. 选择入口</span>
