@@ -12,7 +12,7 @@ type UsageItem = {
   code: string;
 };
 
-export function AgentUsageGuide({ baseUrl }: { baseUrl: string }) {
+export function AgentUsageGuide() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const items = useMemo<UsageItem[]>(
     () => [
@@ -23,7 +23,7 @@ export function AgentUsageGuide({ baseUrl }: { baseUrl: string }) {
         icon: Terminal,
         code: `npm install -g @gogoga/pages-cli
 
-gogoga login --base-url "${baseUrl}"
+gogoga login
 
 gogoga projects list
 gogoga deploy ./dist --project <project-id-or-slug>`
@@ -48,7 +48,7 @@ cp -R packages/agent-skill .agents/skills/gogoga-pages
 # $gogoga-pages deploy this static site`
       }
     ],
-    [baseUrl]
+    []
   );
 
   async function copyCode(item: UsageItem) {

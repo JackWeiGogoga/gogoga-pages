@@ -154,14 +154,7 @@ export class GogogaPagesClient {
 }
 
 export function getGogogaConfigPath() {
-  const configRoot =
-    process.env.GOGOGA_CONFIG_DIR ??
-    process.env.XDG_CONFIG_HOME ??
-    (process.platform === "win32" && process.env.APPDATA
-      ? process.env.APPDATA
-      : path.join(os.homedir(), ".config"));
-
-  return path.join(configRoot, "gogoga-pages", "config.json");
+  return path.join(process.env.GOGOGA_CONFIG_DIR ?? path.join(os.homedir(), ".config", "gogoga-pages"), "config.json");
 }
 
 export function loadGogogaConfig(): GogogaStoredConfig {

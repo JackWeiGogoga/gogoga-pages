@@ -130,9 +130,7 @@ async function login(parsed) {
     process.env.GOGOGA_BASE_URL ??
     currentConfig.baseUrl ??
     "https://app.pages.gogoga.top";
-  const promptedBaseUrl =
-    stringFlag(parsed, "base-url") ?? (await promptText(`Base URL (${defaultBaseUrl}): `));
-  const baseUrl = (promptedBaseUrl || defaultBaseUrl).replace(/\/+$/, "");
+  const baseUrl = defaultBaseUrl.replace(/\/+$/, "");
   const token = stringFlag(parsed, "token") ?? (await promptHidden("API token: "));
 
   if (!token) {
@@ -294,20 +292,6 @@ function hasFlag(parsed, name) {
   return Boolean(parsed.flags[name]);
 }
 
-function promptText(question) {
-  return new Promise((resolve) => {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stderr
-    });
-
-    rl.question(question, (answer) => {
-      rl.close();
-      resolve(answer.trim());
-    });
-  });
-}
-
 function promptHidden(question) {
   return new Promise((resolve) => {
     const rl = readline.createInterface({
@@ -334,7 +318,7 @@ function printHelp() {
   console.log(`Gogoga Pages CLI
 
 Usage:
-  gogoga login [--base-url URL] [--token TOKEN] [--no-verify]
+  gogoga login [--token TOKEN] [--no-verify]
   gogoga logout
   gogoga auth status
   gogoga projects list [--base-url URL] [--token TOKEN]
@@ -345,7 +329,7 @@ Usage:
 
 Environment:
   GOGOGA_API_TOKEN   Optional override for CI or temporary sessions
-  GOGOGA_BASE_URL    Optional override; login config is used by default
+  GOGOGA_BASE_URL    Optional advanced override; defaults to https://app.pages.gogoga.top
 `);
 }
 

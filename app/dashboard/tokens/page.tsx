@@ -1,5 +1,4 @@
 import { KeyRound } from "lucide-react";
-import { headers } from "next/headers";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth-session";
@@ -10,7 +9,6 @@ export const dynamic = "force-dynamic";
 
 export default async function TokensPage() {
   const user = await requireUser();
-  const baseUrl = getBaseUrl((await headers()).get("host"));
   const tokens = await prisma.apiToken.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: "desc" },
@@ -60,24 +58,11 @@ export default async function TokensPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          <AgentUsageGuide baseUrl={baseUrl} />
+          <AgentUsageGuide />
         </CardContent>
       </Card>
     </div>
   );
-}
-
-function getBaseUrl(host: string | null) {
-  if (process.env.BETTER_AUTH_URL) {
-    return process.env.BETTER_AUTH_URL.replace(/\/+$/, "");
-  }
-
-  if (!host) {
-    return "https://app.pages.gogoga.top";
-  }
-
-  const protocol = host.startsWith("localhost") || host.startsWith("127.0.0.1") ? "http" : "https";
-  return `${protocol}://${host}`;
 }
 
 function serializeToken(token: {

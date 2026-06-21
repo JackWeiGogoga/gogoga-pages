@@ -21,14 +21,14 @@ Log in locally:
 
 ```bash
 npm install -g @gogoga/pages-cli
-gogoga login --base-url "https://app.pages.gogoga.top"
+gogoga login
 ```
 
-The token is stored in the user config file with `0600` permissions. Environment variables are still supported for CI and temporary overrides:
+The token is stored in `~/.config/gogoga-pages/config.json` with `0600` permissions. Environment variables are still supported for CI and temporary overrides:
 
 ```bash
-export GOGOGA_API_TOKEN="ggp_xxx"
 export GOGOGA_BASE_URL="http://localhost:3000"
+export GOGOGA_API_TOKEN="ggp_xxx"
 ```
 
 ## 2. CLI
@@ -37,7 +37,7 @@ Install:
 
 ```bash
 npm install -g @gogoga/pages-cli
-gogoga login --base-url "https://app.pages.gogoga.top"
+gogoga login
 ```
 
 Check auth:
