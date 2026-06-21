@@ -194,12 +194,72 @@ docker compose pull
 docker compose up -d
 ```
 
+Recommended update script:
+
+```bash
+scp deploy/ops/update-service.sh ali:/opt/gogoga-pages/update-service.sh
+ssh ali
+chmod +x /opt/gogoga-pages/update-service.sh
+```
+
+If the repository is already checked out on the server, copy it locally instead:
+
+```bash
+cp deploy/ops/update-service.sh /opt/gogoga-pages/update-service.sh
+chmod +x /opt/gogoga-pages/update-service.sh
+```
+
+Run a normal update:
+
+```bash
+cd /opt/gogoga-pages
+./update-service.sh
+```
+
+The script:
+
+```text
+1. pulls the latest app image
+2. backs up /opt/gogoga-pages/data/app.db when it exists
+3. runs npx prisma db push --skip-generate in a one-off app container
+4. starts/recreates the app service
+5. checks http://127.0.0.1:3000/dashboard
+```
+
+Useful variants:
+
+```bash
+./update-service.sh --skip-db
+./update-service.sh --no-pull
+./update-service.sh --logs
+```
+
 Initialize SQLite on first deploy:
 
 ```bash
 docker compose exec app npm run db:init:prod
 docker compose exec app npx prisma db push
 ```
+
+Database update policy:
+
+```text
+Current MVP policy: run prisma db push on every deploy.
+```
+
+`prisma db push` is idempotent for the current SQLite setup and is simpler than
+trying to infer whether the schema changed. The update script runs it before
+recreating the service, and creates a SQLite backup first.
+
+Long-term production best practice is to commit Prisma migrations and replace
+`prisma db push` with:
+
+```bash
+npx prisma migrate deploy
+```
+
+`prisma migrate deploy` tracks already-applied migrations in the database and
+automatically applies only pending migrations.
 
 OAuth redirect URLs:
 
