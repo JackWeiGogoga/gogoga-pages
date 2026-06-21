@@ -4,6 +4,9 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends openssl sqlite3 \
   && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
+COPY packages/sdk/package.json ./packages/sdk/package.json
+COPY packages/cli/package.json ./packages/cli/package.json
+COPY packages/mcp/package.json ./packages/mcp/package.json
 RUN npm ci
 
 FROM node:24-bookworm-slim AS builder
